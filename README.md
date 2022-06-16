@@ -206,7 +206,7 @@ Press `enter`
 
 Change `pong (this could be serial/license key or download link or further)` 
 
-to `Secret Discord Server Invice URL: https://discord.gg/2PZZp9hh` 
+to `Secret Discord Server Invite URL: https://discord.gg/2PZZp9hh` 
 
 or what ever you want to send in their list of transactions; respecting of course the 128 character count limit.
 
@@ -225,7 +225,7 @@ Press `enter`
 
 change `pong (could be serial, license or download link or anything).` 
 
-to `Secret Discord Server Invice URL: https://discord.gg/2PZZp9hh .`
+to `Secret Discord Server Invite URL: https://discord.gg/2PZZp9hh .`
 
 ![Screenshot_20220616-071805](https://user-images.githubusercontent.com/86203717/174078723-11ebec92-6e1b-45f7-a53d-f8702c6cddd4.png)
 
