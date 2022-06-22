@@ -1,22 +1,44 @@
 # dero-pong-server
 
-*How-to Make a DERO Pong_Server* 
+### Generating Build Scripts
+
+There is a helper script `run_secret_server` in the `bin` folder
+
+It takes 3 positional arguments: discord_url, price_in_units, and purchase_banner (optional)
+
+example:
+
+```bash
+bin/run_secret_server "https://discord.gg/SXTzd7YPUU" 4 "Purchase Secret Discord Server Invite URL"
+```
+
+or just
+
+```bash
+bin/run_secret_server "https://discord.gg/SXTzd7YPUU" 4
+```
+
+`run_secret_server` will take the given arguments and create a new file tagged with the current date and time under the `run` folder:
+
+`run/secret_server_%YYYY-%MM-%DD_%H%M%S.go`
+
+### How-to Make a DERO Pong_Server
 
 **secretnamebasis**
 
-Preliminary Information 
+Preliminary Information
 
-These instructables were mobile optimized for Android. If that's a drag that they were made for Android and not linux, hit me up and I would be happy to build the instructions for linux (they are like the same). I am certain that you could 'think' your way through these instructions to do it on mac and windows - but that's not my territory. 
+These instructables were mobile optimized for Android. If that's a drag that they were made for Android and not linux, hit me up and I would be happy to build the instructions for linux (they are like the same). I am certain that you could 'think' your way through these instructions to do it on mac and windows - but that's not my territory.
 
-These instructables need you to compile DERO packages from source because you will be altering source code. There are changes that you are going to be making to DERO's source code to make it optimized for your use-case. This example assumes a fresh install of Termux (at minimum cleared storage and cache). 
+These instructables need you to compile DERO packages from source because you will be altering source code. There are changes that you are going to be making to DERO's source code to make it optimized for your use-case. This example assumes a fresh install of Termux (at minimum cleared storage and cache).
 
 These instructions are a literal step-by-step walk through. I use lots of pictures, and they are big because they are mobile images. Some people might not like that, but I won't know unless you comment below ;)  
 
 Also, you CANNOT use --fastsync in this example or your wallet won't show the transactions because you will only have the blocks, and not the individual transactions themselves. #sorrynotsorry
 
-PROTIP: you can zoom in and zoom out with the pinching gesture, like you would a map on your phone. 
+PROTIP: you can zoom in and zoom out with the pinching gesture, like you would a map on your phone.
 
-PROTIP: you can 'tab-complete' by pressing the double arrows (↹) under the ESC button, this is wicked handy btw. Say you need to cd into something long like rpc_examples, when you type rp and then touch the Tab button (↹), it auto fills in the rest. 
+PROTIP: you can 'tab-complete' by pressing the double arrows (↹) under the ESC button, this is wicked handy btw. Say you need to cd into something long like rpc_examples, when you type rp and then touch the Tab button (↹), it auto fills in the rest.
 
 PROTIP: when you see someone type `cd ..` the `..` sends you further up the file pipe line
 
@@ -154,7 +176,7 @@ And there it is, the pong_server.go file I got from @CaptainDero
 
 We are going to edit this pong_server.go file to something a little more to our use-case. And for this example, we are going to be making pong_server that TX Replies a private discord server url when people pay 0.01 DERO
 
-There are a few things that we need to change: the `RPC_COMMENT` that tells them what they are buying at point of sale, `RPC_VALUE_TRANSFER` that sets how much they need to send to trigger the pong to their ping,  the `RPC_COMMENT` that delivers the information to their list of transactions and `fmt.Sprintf(message)` that echoes that `RPC_COMMENT` 
+There are a few things that we need to change: the `RPC_COMMENT` that tells them what they are buying at point of sale, `RPC_VALUE_TRANSFER` that sets how much they need to send to trigger the pong to their ping,  the `RPC_COMMENT` that delivers the information to their list of transactions and `fmt.Sprintf(message)` that echoes that `RPC_COMMENT`
 
 A note here, you can alter the code using any text editor. But for the simplicity of the users, I chose `nano` over `vim`. My personal preference is `vim`, but I am not going to teach people how to use something so powerful when I already in the middle of doing that.
 
@@ -194,7 +216,7 @@ Change `2` to `100`
 
 ![Screenshot_20220616-065905](https://user-images.githubusercontent.com/86203717/174074994-f0ee5c82-ba98-42b1-80ca-4ba1934d9a86.png)
 
-Now let's change the deployable that they will be getting in their list of transactions. That's what the TX Reply does, it replies to transactions after all, and so you would find the information in your list of transactions. 
+Now let's change the deployable that they will be getting in their list of transactions. That's what the TX Reply does, it replies to transactions after all, and so you would find the information in your list of transactions.
 
 `ctrl`+`w`
 
@@ -204,9 +226,9 @@ Press `enter`
 
 ![Screenshot_20220616-070330](https://user-images.githubusercontent.com/86203717/174075710-a839a0fd-8c6d-41a3-9477-7ca16cf87bd3.png)
 
-Change `pong (this could be serial/license key or download link or further)` 
+Change `pong (this could be serial/license key or download link or further)`
 
-to `Secret Discord Server Invite URL: https://discord.gg/2PZZp9hh` 
+to `Secret Discord Server Invite URL: https://discord.gg/2PZZp9hh`
 
 or what ever you want to send in their list of transactions; respecting of course the 128 character count limit.
 
@@ -223,7 +245,7 @@ Press `enter`
 
 ![Screenshot_20220616-071445](https://user-images.githubusercontent.com/86203717/174077885-5dab3a23-2691-4ffb-adce-0a224b669565.png)
 
-change `pong (could be serial, license or download link or anything).` 
+change `pong (could be serial, license or download link or anything).`
 
 to `Secret Discord Server Invite URL: https://discord.gg/2PZZp9hh .`
 
@@ -249,7 +271,7 @@ Now we are going to compile the code and to do that, we need to leave our pong_s
 
 ![Screenshot_20220616-072842](https://user-images.githubusercontent.com/86203717/174080535-4ba18b79-0f27-4358-b468-0ccd18bfbef8.png)
 
-And here is where we let `go` build our edits into executable files and drop the outputs into our dero-linux file. All we have to do is... 
+And here is where we let `go` build our edits into executable files and drop the outputs into our dero-linux file. All we have to do is...
 
 `go build -o ~/dero-linux/ ./...`
 
@@ -273,13 +295,13 @@ Now we need a copy of mainnet, but in addition to all the blocks we also need ou
 
 The slow and decentralized way to get synced with mainnet in to run `./derod`
 
-For this example we used the fast and centralized way to get synced with mainnet is to collect a copy of `mainnet` from seed node. To do this we use 
+For this example we used the fast and centralized way to get synced with mainnet is to collect a copy of `mainnet` from seed node. To do this we use
 
 `rsync --inplace --port=2048 -a rsync://141.95.86.80/DEROblockchainDB/mainnet ./`
 
 ![Screenshot_20220616-080059](https://user-images.githubusercontent.com/86203717/174087205-f26f99f4-2fa6-435d-a3a7-9200edfae551.png)
 
-As you can see, this hangs. And it takes roughly 45 mins. Once this is done syncing with network, it will drop to the pipeline or errors will happen. Most likely storage error. 
+As you can see, this hangs. And it takes roughly 45 mins. Once this is done syncing with network, it will drop to the pipeline or errors will happen. Most likely storage error.
 
 Then you will execute the DERO daemon
 
@@ -287,7 +309,7 @@ Then you will execute the DERO daemon
 
 ![Screenshot_20220616-104506_Termux](https://user-images.githubusercontent.com/86203717/174125573-274103b0-9298-468c-b2f8-6f94dc0bb8ae.jpg)
 
-open a few new terminal sessions by pulling the drawer from the left hand screen 
+open a few new terminal sessions by pulling the drawer from the left hand screen
 
 ![Screenshot_20220616-125731_Termux](https://user-images.githubusercontent.com/86203717/174146973-97f39912-bb2e-419f-84a6-b286e6de6cc2.jpg)
 
@@ -300,16 +322,16 @@ open, rebuild from seed or make a wallet named `rpc` wallet (2min-2hrs)
 ![Screenshot_20220616-125303_Termux](https://user-images.githubusercontent.com/86203717/174146682-7d96dd6d-280f-4763-af97-f7c099af1fe0.jpg)
 
 
-Pull open the drawer of sessions from the left hand edge and start the `pong_server`. It will likely begin dumping errors at you, that's normal. 
+Pull open the drawer of sessions from the left hand edge and start the `pong_server`. It will likely begin dumping errors at you, that's normal.
 
 `./pong_server`
 
 ![Screenshot_20220616-125535_Termux](https://user-images.githubusercontent.com/86203717/174147675-6a520c87-661d-406a-82f9-317be624cfe2.jpg)
 
 
-Now hit `ctrl`+`c`to kill the process and look at the two Integrated Addresses. 
+Now hit `ctrl`+`c`to kill the process and look at the two Integrated Addresses.
 
-The first is `(without hardcoded amount)` you don't collect this one. 
+The first is `(without hardcoded amount)` you don't collect this one.
 
 You need to collect the second one because it has the hardcoded amount
 
@@ -317,11 +339,11 @@ You need to collect the second one because it has the hardcoded amount
 
 ## Testing the pong_server
 
-open a new terminal session 
+open a new terminal session
 
 `./dero-wallet-cli`
 
-open, rebuild from seed or make a new wallet and register hot-wallet (2mins-2hrs) 
+open, rebuild from seed or make a new wallet and register hot-wallet (2mins-2hrs)
 
 ![Screenshot_20220616-125758_Termux](https://user-images.githubusercontent.com/86203717/174148356-c31a96e1-bbb3-4fc8-97e2-f0fd38dd57bc.jpg)
 
@@ -341,7 +363,7 @@ And if you are quick, you can pull open the drawer to the `pong_server` and watc
 
 ![Screenshot_20220616-125913_Termux](https://user-images.githubusercontent.com/86203717/174148739-e0af44fc-4af1-481d-b955-6853570fc451.jpg)
 
-Now open the drawer and jump over to the session with your hot-wallet running and select `13` to see the wallet transaction history. 
+Now open the drawer and jump over to the session with your hot-wallet running and select `13` to see the wallet transaction history.
 
 ![Screenshot_20220616-125955_Termux](https://user-images.githubusercontent.com/86203717/174148903-d24c2077-88ba-406d-8863-3ee037063253.jpg)
 
@@ -349,7 +371,7 @@ you should see that there is, buried in all the code, the invite code to the Sec
 
 ![Screenshot_20220616-132622_Termux](https://user-images.githubusercontent.com/86203717/174149488-8d309b75-aaaa-4c86-a5a2-a9e97926b5c1.jpg)
 
-Now copy and paste the link url into your browser and see for your self that it works. 
+Now copy and paste the link url into your browser and see for your self that it works.
 
 ![Screenshot_20220616-130045_Firefox](https://user-images.githubusercontent.com/86203717/174149649-cfe1f2b3-ed85-48ed-a108-6eb836a7015c.jpg)
 
@@ -357,4 +379,4 @@ SUCCESS! You have made your first PONG_SERVER!
 
 Now take a moment to think about what this means. You can create your own paywall for nearly anything you want in a private, encrypted and trustless way.
 
-Go forther and share the power of DERO!
+Go forth and share the power of DERO!

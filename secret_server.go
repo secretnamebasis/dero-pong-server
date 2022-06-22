@@ -30,23 +30,26 @@ var logger logr.Logger = logr.Discard() // default discard all logs
 const PLUGIN_NAME = "pong_server"
 
 const DEST_PORT = uint64(0x1234567812345678)
+const DISCORD_URL = "https://discord.gg/SXTzd7YPUU"
+const COMMENT_TEMPLATE = "Successfully purchased Secret Discord Server Invite URL: %s. You sent %s at height %d"
+const PRICE_IN_UNITS = uint64(1000)
+const PURCHASE_BANNER = "Purchase Secret Discord Server Invite URL"
 
 var expected_arguments = rpc.Arguments{
 	{Name: rpc.RPC_DESTINATION_PORT, DataType: rpc.DataUint64, Value: DEST_PORT},
 	// { Name:rpc.RPC_EXPIRY , DataType:rpc.DataTime, Value:time.Now().Add(time.Hour).UTC()},
-	{Name: rpc.RPC_COMMENT, DataType: rpc.DataString, Value: "Purchase Secret Discord Server Invite URL"},
+	{Name: rpc.RPC_COMMENT, DataType: rpc.DataString, Value: PURCHASE_BANNER},
 	//{"float64", rpc.DataFloat64, float64(0.12345)},          // in atomic units
 	{Name: rpc.RPC_NEEDS_REPLYBACK_ADDRESS, DataType: rpc.DataUint64, Value: uint64(0)}, // this service will reply to incoming request,so needs the senders address
-	{Name: rpc.RPC_VALUE_TRANSFER, DataType: rpc.DataUint64, Value: uint64(1000)},      // in atomic units
-
+	{Name: rpc.RPC_VALUE_TRANSFER, DataType: rpc.DataUint64, Value: PRICE_IN_UNITS},     // in atomic units
 }
 
 // currently the interpreter seems to have a glitch if this gets initialized within the code
-// see limitations github.com/traefik/yaegi
+// see limitations https://github.com/traefik/yaegi
 var response = rpc.Arguments{
 	{Name: rpc.RPC_DESTINATION_PORT, DataType: rpc.DataUint64, Value: uint64(0)},
 	{Name: rpc.RPC_SOURCE_PORT, DataType: rpc.DataUint64, Value: DEST_PORT},
-	{Name: rpc.RPC_COMMENT, DataType: rpc.DataString, Value: "Successfully purchased Secret Discord Server Invite URL: https://discord.gg/SXTzd7YPUU "},
+	{Name: rpc.RPC_COMMENT, DataType: rpc.DataString, Value: "" }, // Value will be filled on request
 }
 
 var rpcClient = jsonrpc.NewClient("http://127.0.0.1:10103/json_rpc")
@@ -187,7 +190,7 @@ func processing_thread(db *bbolt.DB) {
 
 				// value received is what we are expecting, so time for response
 				response[0].Value = e.SourcePort // source port now becomes destination port, similar to TCP
-				response[2].Value = fmt.Sprintf("Successfully purchased Secret Discord Server Invite URL: https://discord.gg/SXTzd7YPUU .You sent %s at height %d", walletapi.FormatMoney(e.Amount), e.Height)
+				response[2].Value = fmt.Sprintf(COMMENT_TEMPLATE, DISCORD_URL, walletapi.FormatMoney(e.Amount), e.Height)
 
 				//_, err :=  response.CheckPack(transaction.PAYLOAD0_LIMIT)) //  we only have 144 bytes for RPC
 
@@ -215,4 +218,3 @@ func processing_thread(db *bbolt.DB) {
 
 	}
 }
-
