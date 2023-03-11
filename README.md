@@ -1,5 +1,5 @@
 # dero-pong-server
-Inspired by CaptianDero's pong_server, I rewrote the code base in BASH. 
+Inspired by CaptianDero's pong_server, I rewrote the code base in BASH. So, it's called dero-pong-server. 
 
 This was a fun project.
 
@@ -14,13 +14,13 @@ Assuming you know how to launch a DERO wallet in RPC mode...
 
 Get code:
 ```
-wget https://raw.githubusercontent.com/secretnamebasis/dero-pong-server/main/pong_server
+wget https://raw.githubusercontent.com/secretnamebasis/dero-pong-server/main/dero-pong-server
 ```
-Mark `pong_server` executable 
+Mark `dero-pong-server` executable 
 ```
-chmod +x pong_server
+chmod +x dero-pong-server
 ```
-Run `pong_server`
+Run `deropong-server`
 ```
-./pong_server
+./dero-pong-server
 ```
