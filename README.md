@@ -20,7 +20,7 @@ Mark `dero-pong-server` executable
 ```
 chmod +x dero-pong-server
 ```
-Run `deropong-server`
+Run `dero-pong-server`
 ```
 ./dero-pong-server
 ```
