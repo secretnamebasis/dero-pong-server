@@ -87,7 +87,6 @@ echo "Scanning your wallet..."
 		continue
 	fi
 	if [[ "$pong_amount" =~ "$amount" ]] ; then
-		printf "sale %s %s %s %s\n" "$time" "$addr" "$amount" "$txid" | tee >> $pong_db
  		echo "$addr sent $amount at $time"
 		echo "Dispatching transfer"
 		curl -s -X POST \
@@ -120,6 +119,7 @@ echo "Scanning your wallet..."
             ]
         }
 }' | jq -r '.result | "TXID: " +(.txid)'
+printf "sale %s %s %s %s\n" "$time" "$addr" "$amount" "$txid" | tee >> $pong_db
 echo "Pong Server has successfully dispatched pong." 
 	fi
 done <<< "$sales_list"
