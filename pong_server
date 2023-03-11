@@ -1,0 +1,129 @@
+#!/bin/bash
+#
+# data feeds
+
+# Initialize Environment Variables
+pong_amount="3771"
+
+# Initialize parameters
+if [ ! -d $HOME/dero-utils/ ]; then
+  mkdir $HOME/dero-utils
+fi
+pong_dir="$HOME/dero-utils"
+pong_db="$pong_dir/$pong_amount.sales.db"
+iaddress_text_file="$pong_dir/$pong_amount.iaddress.txt"
+touch $pong_db
+
+# Initialize Sales List
+export_transfers=$(curl -s -X POST \
+  http://127.0.0.1:10103/json_rpc \
+  -H 'content-type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "GetTransfers",
+    "params": {
+    	"coinbase": true,
+	"out": true,
+        "in": true
+    }
+}')
+sales_list=$(echo "$export_transfers" | jq -r '.result.entries[] | select(.payload_rpc != null) | (.time) + " " + (.payload_rpc[] | select(.name == "R" and .datatype == "A") | .value) + " " + (.amount | tostring) + " " + (.txid | tostring) + " " + (.dstport | tostring)')
+
+
+# Initialize ping module
+export_iaddress=$(curl -s -X POST \
+  http://127.0.0.1:10103/json_rpc \
+  -H 'content-type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "MakeIntegratedAddress",
+    "params": {
+        "payload_rpc": [
+        {
+                "name": "C",
+                "datatype": "S",
+                "value": "Purchase Secret Discord Server Invite URL"
+        },
+
+        {
+                "name": "D",
+                "datatype": "U",
+                "value": 1311768465173141000
+        },
+
+        {
+                "name": "N",
+                "datatype": "U",
+                "value": 0
+        },
+        {
+                "name": "V",
+                "datatype": "U",
+                "value": 3771
+        }
+        ]
+}
+}') 
+echo "Welcome to your pong server."
+echo "$export_iaddress" | jq -r '.result | (.integrated_address)' > $iaddress_text_file 
+echo "Your iAddress is below:"
+cat $iaddress_text_file
+echo "A copy of your iAddress has been saved in $iaddress_text_file"
+
+# Initialize pong module
+while true ; do
+echo "Scanning your wallet..."
+	while read -r sale; do
+	time=$(echo $sale | awk '{print $1}') 
+	addr=$(echo $sale | awk '{print $2}')
+	amount=$(echo $sale | awk '{print $3}')
+	txid=$(echo $sale | awk '{print $4}')
+	dst_port=$(echo $sale | awk '{print $5}') 
+	already_processed=$(cat $pong_db | grep "$time") 
+	if [[ "$already_processed" =~ "$time" ]] ; then
+		echo "$txid is already processed, skipping"
+		continue
+	fi
+	if [[ "$pong_amount" =~ "$amount" ]] ; then
+		printf "sale %s %s %s %s\n" "$time" "$addr" "$amount" "$txid" | tee >> $pong_db
+ 		echo "$addr sent $amount at $time"
+		echo "Dispatching transfer"
+		curl -s -X POST \
+     http://127.0.0.1:10103/json_rpc \
+     -H 'content-type: application/json' \
+     -d '{
+       "jsonrpc": "2.0",
+       "id": "1",
+       "method": "transfer",
+       "params": {
+           "scid": "00000000000000000000000000000000",
+           "destination": "$addr",
+           "amount": 1,
+           "payload_rpc": [
+           {
+           "name": "C",
+           "datatype": "S",
+           "value": "Secret Message: 1337"
+           },
+           {
+           "name": "D",
+            "datatype": "U",
+           "value": 0
+           },
+           {
+            "name": "S",
+            "datatype": "U",
+            "value": '"$dst_port"'
+            }
+            ]
+        }
+}' | jq -r '.result | "TXID: " +(.txid)'
+echo "Pong Server has successfully dispatched pong." 
+	fi
+done <<< "$sales_list"
+	echo "Wallet scan complete and will scan again every 10 seconds."
+	sleep 10
+done	
+
