@@ -20,6 +20,17 @@ Mark `dero-pong-server` executable
 ```
 chmod +x dero-pong-server
 ```
+Update init variables at the head of the script
+```
+# Initialize Environment Variables
+pong_amount="3771"
+ip="192.168.12.109"
+port="10107"
+user="user"
+pass="pass"
+in_message="You are purchasing something cool"
+out_message="You purchased this rad thing"
+```
 Run `dero-pong-server`
 ```
 ./dero-pong-server
