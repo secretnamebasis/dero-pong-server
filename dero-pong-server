@@ -3,13 +3,16 @@
 # data feeds
 
 # Initialize Environment Variables
-pong_amount="3771"
+pong_amount="1593"
 ip="192.168.12.109"
 port="10107"
 user="user"
 pass="pass"
 in_message="You are purchasing something cool"
+d_port="24862"
 out_message="You purchased this rad thing"
+
+scid="0000000000000000000000000000000000000000000000000000000000000000"
 
 # Initialize parameters
 if [ ! -d assets/ ]; then
@@ -40,7 +43,7 @@ export_iaddress=$(curl -s -X POST \
         {
           "name": "D",
           "datatype": "U",
-          "value": 1311768465173141000
+          "value": '"${d_port}"'
         },
         {
           "name": "N",
@@ -58,34 +61,67 @@ export_iaddress=$(curl -s -X POST \
 
 echo "Welcome to your pong server."
 echo "$export_iaddress" | jq -r '.result.integrated_address' > "$iaddress_text_file"
-echo "Your iAddress is below:"
+echo "Your integrated address is below:"
 iaddress=$(cat "$iaddress_text_file")
 echo "$iaddress"
 qrencode -o $iaddress_qr_file "$iaddress"
 echo "A copy of your integrated address has been saved in $pong_dir as a txt file and a qr code"
+echo "Already processed transactions found in the database will be skipped automatically"
 
 # Initialize pong module
 while true; do
 # Initialize Sales List
-export_transfers=$(curl -s -X POST \
-  "http://$ip:$port/json_rpc" \
-  -u "$user:$pass" \
+export_transfers=$(
+  curl -s -X POST \
+  http://$ip:$port/json_rpc \
+  -u $user:$pass \
   -H 'content-type: application/json' \
   -d '{
     "jsonrpc": "2.0",
     "id": "1",
     "method": "GetTransfers",
     "params": {
-      "coinbase": true,
-      "out": true,
-      "in": true
+        "out": false,
+        "in": true
     }
 }')
-
+# echo $export_transfers
 # Extract sales list with jq and store it in a variable
-sales_list=$(echo "$export_transfers" | jq -r '.result.entries[] | select(.payload_rpc != null) | (.time) + " " + (.payload_rpc[] | select(.name == "R" and .datatype == "A") | .value) + " " + (.amount | tostring) + " " + (.txid | tostring) + " " + (.dstport | tostring)')
-
-  echo "Scanning your wallet..."
+sales_list=$(
+echo "$export_transfers" |
+jq -r '.result.entries[] |
+select(.payload_rpc != null) |
+select(.payload_rpc[] |
+select(.name == "R" and .datatype == "A")) |
+{
+  height,
+  blockhash,
+  txid,
+  amount,
+  fees,
+  time,
+  dstport,
+  payload_rpc: [
+    .payload_rpc[] |
+    {
+      name,
+      datatype,
+      value
+    }
+  ]
+} |
+(.time) +
+" " +
+(.payload_rpc[] | select(.name == "R" and .datatype == "A") | .value) +
+" " +
+(.amount | tostring) +
+" " +
+(.txid) +
+" " +
+(.dstport | tostring)'
+)
+# echo $sales_list
+  # echo "Scanning your wallet..."
   while read -r sale; do
     time=$(echo "$sale" | awk '{print $1}')
     addr=$(echo "$sale" | awk '{print $2}')
@@ -93,49 +129,49 @@ sales_list=$(echo "$export_transfers" | jq -r '.result.entries[] | select(.paylo
     txid=$(echo "$sale" | awk '{print $4}')
     dst_port=$(echo "$sale" | awk '{print $5}')
     already_processed=$(grep "$time" "$pong_db")
+    if [[ "$pong_amount" =~ "$amount" ]]; then
+    if [[ "$dst_port" =~ "$d_port" ]]; then
     if [[ "$already_processed" =~ "$time" ]]; then
-      echo "$txid is already processed, skipping"
+      # echo "$txid is already processed, skipping"
       continue
     fi
-    if [[ "$pong_amount" =~ "$amount" ]]; then
       echo "$addr sent $amount at $time"
       echo "Dispatching transfer"
-      pong_response=$(curl -s -X POST \
-        "http://$ip:$port/json_rpc" \
-        -u "$user:$pass" \
-        -H 'content-type: application/json' \
-        -d '{
-          "jsonrpc": "2.0",
-          "id": "1",
-          "method": "transfer",
-          "params": {
-            "scid": "0000000000000000000000000000000000000000000000000000000000000000",
-            "destination": "'"${addr}"'",
-            "amount": 1,
-            "payload_rpc": [
-              {
-                "name": "C",
-                "datatype": "S",
-                "value": "'"${out_message}"'"
-              },
-              {
-                "name": "D",
-                "datatype": "U",
-                "value": 0
-              },
-              {
-                "name": "S",
-                "datatype": "U",
-                "value": "'"${dst_port}"'"
-              }
-            ]
-          }
-        }' | jq -r '.result.txid')
-      echo "TXID: $pong_response"
+ payload=$(jq -n --arg addr "$addr" --arg amount "$amount" --arg scid "$scid" --arg out_message "$out_message" --arg dst_port "$dst_port" \
+  '{
+    "jsonrpc": "2.0",
+    "id": "1",
+    "method": "transfer",
+    "params": {
+       "ringsize": 16,
+       "transfers":
+       [
+        {
+          "scid": $scid,
+          "destination": $addr,
+          "amount": 2,
+          "payload_rpc":
+          [
+            {
+              "name": "C",
+              "datatype": "S",
+              "value": $out_message
+            }
+          ]
+        }
+      ]
+    }
+  }'
+)
+response=$(curl -u "$user":"$pass" -X POST -H 'Content-type: application/json' -d "$payload" "http://$ip:$port/json_rpc")
+
+pong_response=$(echo $response | jq -r '.result.txid')
+ echo "TXID: $pong_response"
       printf "%s\n" "$sale" >> "$pong_db"
       echo "Pong Server has successfully dispatched pong."
     fi
+    fi
   done <<< "$sales_list"
-  echo "Wallet scan complete and will scan again every 18 seconds."
+  # echo "Wallet scan complete and will scan again every 18 seconds."
   sleep 18
 done
