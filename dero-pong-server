@@ -18,6 +18,7 @@ fi
 pong_dir="assets/"
 pong_db="$pong_dir/$pong_amount.sales.db"
 iaddress_text_file="$pong_dir/$pong_amount.iaddress.txt"
+iaddress_qr_file="$pong_dir/$pong_amount.iaddress_qrcode.png"
 touch "$pong_db"
 
 # Initialize ping module
@@ -49,7 +50,7 @@ export_iaddress=$(curl -s -X POST \
         {
           "name": "V",
           "datatype": "U",
-          "value": 3771
+          "value": '"${pong_amount}"'
         }
       ]
     }
@@ -58,8 +59,10 @@ export_iaddress=$(curl -s -X POST \
 echo "Welcome to your pong server."
 echo "$export_iaddress" | jq -r '.result.integrated_address' > "$iaddress_text_file"
 echo "Your iAddress is below:"
-cat "$iaddress_text_file"
-echo "A copy of your iAddress has been saved in $iaddress_text_file"
+iaddress=$(cat "$iaddress_text_file")
+echo "$iaddress"
+qrencode -o $iaddress_qr_file "$iaddress"
+echo "A copy of your integrated address has been saved in $pong_dir as a txt file and a qr code"
 
 # Initialize pong module
 while true; do
