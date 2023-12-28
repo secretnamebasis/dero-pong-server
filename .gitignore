@@ -1,2 +1,3 @@
-/run/*
-!/run/.keep
+*assets
+*txt
+*db
