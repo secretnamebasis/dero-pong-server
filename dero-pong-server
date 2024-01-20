@@ -3,14 +3,16 @@
 # data feeds
 
 # Initialize Environment Variables
-pong_amount="1593"
-ip="192.168.12.109"
-port="10107"
-user="user"
+ask_amount="7531" # this is how much you want coming in
+respond_amount="2" # this is how much is going out
+ip="192.168.12.208"
+port="10104"
+user="secret"
 pass="pass"
-in_message="You are purchasing something cool"
+in_message="You are buying Quest for Designs Qombucha"
 d_port="24862"
-out_message="You purchased this rad thing"
+uuid=$(uuidgen)
+out_message=uuid
 
 scid="0000000000000000000000000000000000000000000000000000000000000000"
 
@@ -19,9 +21,9 @@ if [ ! -d assets/ ]; then
   mkdir assets/
 fi
 pong_dir="assets/"
-pong_db="$pong_dir/$pong_amount.sales.db"
-iaddress_text_file="$pong_dir/$pong_amount.iaddress.txt"
-iaddress_qr_file="$pong_dir/$pong_amount.iaddress_qrcode.png"
+pong_db="$pong_dir/$ask_amount.sales.db"
+iaddress_text_file="$pong_dir/$ask_amount.iaddress.txt"
+iaddress_qr_file="$pong_dir/$ask_amount.iaddress_qrcode.png"
 touch "$pong_db"
 
 # Initialize ping module
@@ -53,7 +55,7 @@ export_iaddress=$(curl -s -X POST \
         {
           "name": "V",
           "datatype": "U",
-          "value": '"${pong_amount}"'
+          "value": '"${ask_amount}"'
         }
       ]
     }
@@ -129,7 +131,7 @@ select(.name == "R" and .datatype == "A")) |
     txid=$(echo "$sale" | awk '{print $4}')
     dst_port=$(echo "$sale" | awk '{print $5}')
     already_processed=$(grep "$time" "$pong_db")
-    if [[ "$pong_amount" =~ "$amount" ]]; then
+    if [[ "$ask_amount" =~ "$amount" ]]; then
     if [[ "$dst_port" =~ "$d_port" ]]; then
     if [[ "$already_processed" =~ "$time" ]]; then
       # echo "$txid is already processed, skipping"
@@ -137,7 +139,7 @@ select(.name == "R" and .datatype == "A")) |
     fi
       echo "$addr sent $amount at $time"
       echo "Dispatching transfer"
- payload=$(jq -n --arg addr "$addr" --arg amount "$amount" --arg scid "$scid" --arg out_message "$out_message" --arg dst_port "$dst_port" \
+ payload=$(jq -n --arg respond_amount "$respond_amount" --arg addr "$addr" --arg amount "$amount" --arg scid "$scid" --arg out_message "$out_message" --arg dst_port "$dst_port" \
   '{
     "jsonrpc": "2.0",
     "id": "1",
@@ -149,7 +151,7 @@ select(.name == "R" and .datatype == "A")) |
         {
           "scid": $scid,
           "destination": $addr,
-          "amount": 2,
+          "amount": $respond_amount,
           "payload_rpc":
           [
             {
